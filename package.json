@@ -2,9 +2,13 @@
   "name": "frontend",
   "version": "0.1.0",
   "private": true,
+  "homepage": "",
   "dependencies": {
+    "apollo-boost": "^0.4.3",
     "react": "^16.8.6",
+    "react-apollo": "^2.5.8",
     "react-dom": "^16.8.6",
+    "react-relay": "^5.0.0",
     "react-scripts": "3.0.1"
   },
   "scripts": {
@@ -27,5 +31,10 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "babel-plugin-relay": "^5.0.0",
+    "graphql": "^14.3.1",
+    "relay-compiler": "^5.0.0"
   }
 }

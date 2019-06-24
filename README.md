@@ -24,7 +24,14 @@ It is intended to be an alternative to REST and SOAP APIs
 
 ### Live demo
 
-  Try the [live demo](http://tasklist.frontend.examples.sad-systems.ru/)
+Try the [live demo](http://tasklist.frontend.examples.sad-systems.ru/)
+  
+Use: 
+
+  * username: admin
+  * password: 123
+   
+to get the access to edit tasks.
  
 ### Project source files
 

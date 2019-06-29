@@ -3,6 +3,10 @@
  */
 import React from "react";
 
+import { makeStyles } from '@material-ui/core/styles';
+import Button from '@material-ui/core/Button';
+import Container from '@material-ui/core/Container';
+
 export default (props) => {
 
     const { total, limit, offset, onChange } = props;
@@ -15,34 +19,42 @@ export default (props) => {
     const nextPage = currentPage < pageCount ? currentPage + 1 : pageCount;
     const prevPage = currentPage > 1         ? currentPage - 1 : currentPage;
 
-    const handleClick = (page) => {
+    const handleClick = page => event => {
         const offset = (page - 1) * limit;
         if (typeof onChange === "function") onChange(offset);
     };
 
+    const classes = makeStyles(theme => ({
+        pagination: {
+            display: "block",
+            padding: 0,
+            "& > li": {
+                display: "inline",
+            },
+        },
+    }))();
+
     return (
-        <nav aria-label="Page navigation">
-            <ul className="pagination">
-                <li className="page-item">
-                    <button className="page-link" aria-label="Previous" onClick={ () => handleClick(prevPage) }>
-                        <span aria-hidden="true">&laquo;</span>
-                        <span className="sr-only">Previous</span>
-                    </button>
-                </li>
-                {
-                    pages.map((number) =>
-                        <li key={number} className={"page-item " + (number === currentPage ? "active" : "")}>
-                            <button className="page-link" href="#" onClick={ () => handleClick(number) }>{number}</button>
-                        </li>)
-                }
-                <li className="page-item">
-                    <button className="page-link" href="#" aria-label="Next" onClick={ () => handleClick(nextPage) }>
-                        <span aria-hidden="true">&raquo;</span>
-                        <span className="sr-only">Next</span>
-                    </button>
-                </li>
-            </ul>
-        </nav>
+        <Container>
+        <ul className={classes.pagination}>
+            <li>
+                <Button variant="contained" aria-label="Previous" onClick={ handleClick(prevPage) }>
+                    &laquo;
+                </Button>
+            </li>
+            {
+                pages.map((number) =>
+                    <li key={number}>
+                        <Button { ...(number === currentPage ? { color: "primary", variant: "contained" } : null) } onClick={ handleClick(number) }>{number}</Button>
+                    </li>)
+            }
+            <li>
+                <Button variant="contained" aria-label="Next" onClick={ handleClick(nextPage) }>
+                    &raquo;
+                </Button>
+            </li>
+        </ul>
+        </Container>
     );
 
 }

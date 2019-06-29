@@ -6,66 +6,78 @@ import React from "react";
 import { ApolloContext } from "react-apollo";
 import { gql } from "apollo-boost";
 
+import Button from '@material-ui/core/Button';
+import TextField from '@material-ui/core/TextField';
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogTitle from '@material-ui/core/DialogTitle';
+import Checkbox from '@material-ui/core/Checkbox';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import FormControl from "@material-ui/core/FormControl/FormControl";
+import FormHelperText from "@material-ui/core/FormHelperText/FormHelperText";
+
 export default (props) => {
 
     const {
+        open = false,
         isAdmin = false,
         token = '',
         task = {},
         onSubmited,
+        onCanceled,
+        onChange,
     } = props;
 
-    const [ inProgress, setInProgress ] = React.useState(false);
-    const form   = React.createRef();
-    const name   = React.createRef();
-    const email  = React.createRef();
-    const text   = React.createRef();
-    const status = React.createRef();
-
-    const effect = React.useEffect(function () {
-        name.current.value  = task.name  || '';
-        email.current.value = task.email || '';
-        text.current.value  = task.text  || '';
-        if (status.current) status.current.checked = !!task.status;
-    }, [task]);
+    const initState = {
+        inProgress: false,
+    };
+    const [ state, setState ] = React.useState(initState);
+    const changeState  = obj  => setState({ ...state, ...obj });
+    const handleChange = name => event => {
+        if (typeof onChange === "function")
+            onChange(name, event.target.type === 'checkbox' ? event.target.checked : event.target.value);
+    };
     
     const catchError = error => {
-        setInProgress(false);
+        changeState({inProgress: false});
         alert("* ERROR! " + error.toString());
     };
 
     const client = (React.useContext(ApolloContext)).client;
     const createNewTask  = event => {
         event.preventDefault();
-        setInProgress(true);
+        changeState({inProgress: true});
         client
             .mutate({
                 mutation: gql`
                   mutation (
-                    $text:  String!,
-                    $email: Email!,
-                    $name:  String,
+                    $text:   String!,
+                    $email:  Email!,
+                    $name:   String,
+                    $status: Boolean,
                   )
                   {
-                    taskNew(text: $text, email: $email, name: $name)
+                    taskNew(text: $text, email: $email, name: $name, status: $status)
                   }`,
                 variables: {
-                    text:  text.current.value,
-                    email: email.current.value,
-                    name:  name.current.value,
+                    text:   task.text,
+                    email:  task.email,
+                    name:   task.name,
+                    status: !!task.status,
                 }
             })
             .then(result => {
-                const newId = result.data.task_new;
+                const newId = result.data.taskNew;
                 if (typeof onSubmited === "function") onSubmited(newId);
-                setInProgress(false);
+                changeState({inProgress: false});
             })
             .catch( catchError );
     };
 
     const saveExistedTask  = event => {
         event.preventDefault();
-        setInProgress(true);
+        changeState({inProgress: true});
         client
             .mutate({
                 mutation: gql`
@@ -81,61 +93,89 @@ export default (props) => {
                 variables: {
                     token:  token,
                     id:     task.id,
-                    text:   text.current.value,
-                    status: status.current ? !!status.current.checked : false,
+                    text:   task.text,
+                    status: !!task.status,
                 }
             })
             .then(result => {
-                const isChanged = result.data.task_edit;
+                const isChanged = result.data.taskEdit;
                 if (isChanged && typeof onSubmited === "function") onSubmited(task.id);
-                setInProgress(false);
+                changeState({inProgress: false});
             })
             .catch( catchError );
     };
 
+    const handleCancel = event => {
+        event.preventDefault();
+        if (typeof onCanceled === "function") onCanceled();
+        changeState({inProgress: false});
+    };
+
     return (
-        <div className="card-body bg-light">
-            <form ref={form} align="left">
-                <div className="form-group row">
-                    <label className="col-sm-2 col-form-label" htmlFor="exampleFormControlInput1">Your name</label>
-                    <div className="col-sm-10">
-                        <input ref={name} disabled={inProgress || task.id} type="text" className="form-control"
-                           placeholder="Your name"/>
-                    </div>
-                </div>
-                <div className="form-group row">
-                    <label className="col-sm-2 col-form-label" htmlFor="exampleFormControlInput1">Email address</label>
-                    <div className="col-sm-10">
-                        <input ref={email} disabled={inProgress || task.id} type="email" className="form-control"
-                           placeholder="name@example.com"/>
-                    </div>
-                </div>
-                <div className="form-group row">
-                    <label className="col-sm-2 col-form-label" htmlFor="exampleFormControlTextarea1">Text</label>
-                    <div className="col-sm-10">
-                        <textarea ref={text} disabled={inProgress} className="form-control" rows="3"></textarea>
-                    </div>
-                </div>
-                {isAdmin ?
-                    <div className="form-group row">
-                        <label className="col-sm-2 col-form-label" htmlFor="exampleFormControlInput1">Status</label>
-                        <div className="col-sm-10">
-                            <div className="form-group form-check" align="left">
-                                <input ref={status} disabled={inProgress} type="checkbox" className="form-check-input"/>
-                                <label className="form-check-label" htmlFor="exampleCheck1">Done</label>
-                            </div>
-                        </div>
-                    </div>
-                : null }
+        <Dialog open={open} onClose={ handleCancel }>
+            <form align="left">
+                <DialogTitle>{task.id ? "Edit the task" : "New task"}</DialogTitle>
+                <DialogContent>
 
-                { !task.id ?
-                    <button className="btn btn-primary" onClick={ createNewTask }>Create</button>
-                    :
-                    <button className="btn btn-warning" onClick={ saveExistedTask }>Commit</button>
-                }
+                    <TextField
+                        disabled={state.inProgress || !!task.id}
+                        value={task.name}
+                        onChange={ handleChange("name") }
+                        type="text"
+                        label="Your name"
+                        margin="dense"
+                        fullWidth
+                        autoFocus
+                    />
+                    <TextField
+                        disabled={state.inProgress || !!task.id}
+                        value={task.email}
+                        onChange={ handleChange("email") }
+                        type="email"
+                        label="Email address"
+                        margin="dense"
+                        fullWidth
+                    />
+                    <TextField
+                        disabled={state.inProgress}
+                        value={task.text}
+                        onChange={ handleChange("text") }
+                        type="text"
+                        label="Text"
+                        margin="dense"
+                        fullWidth
+                        multiline
+                        rowsMax="4"
+                        rows="4"
+                        variant="outlined"
+                    />
+                    { isAdmin ?
+                        <FormControl component="fieldset">
+                            <FormHelperText>Status</FormHelperText>
+                            <FormControlLabel
+                                control={
+                                    <Checkbox
+                                        disabled={state.inProgress}
+                                        checked={task.status}
+                                        onChange={ handleChange("status") }
+                                        color="primary"
+                                    />}
+                                label="Done"
+                            />
+                        </FormControl>
+                    : null }
 
+                </DialogContent>
+                <DialogActions>
+                    <Button color="primary" onClick={ handleCancel }>Cancel</Button>
+                    { !task.id ?
+                        <Button color="primary" variant="outlined" onClick={ createNewTask }>Create</Button>
+                        :
+                        <Button color="secondary" variant="outlined" onClick={ saveExistedTask }>Commit</Button>
+                    }
+                </DialogActions>
             </form>
-        </div>
+        </Dialog>
     );
 
 }

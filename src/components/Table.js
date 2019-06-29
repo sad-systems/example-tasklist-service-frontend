@@ -80,7 +80,7 @@ export default (props) => {
                                 text,
                                 status
                               },
-                              tasks_total
+                              tasksTotal
                             }
                         `}
             >

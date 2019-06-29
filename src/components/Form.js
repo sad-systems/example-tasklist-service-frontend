@@ -47,7 +47,7 @@ export default (props) => {
                     $name:  String,
                   )
                   {
-                    task_new(text: $text, email: $email, name: $name)
+                    taskNew(text: $text, email: $email, name: $name)
                   }`,
                 variables: {
                     text:  text.current.value,
@@ -76,7 +76,7 @@ export default (props) => {
                     $status: Boolean,
                   )
                   {
-                    task_edit(token: $token, id: $id, text: $text, status: $status)
+                    taskEdit(token: $token, id: $id, text: $text, status: $status)
                   }`,
                 variables: {
                     token:  token,

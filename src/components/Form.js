@@ -56,7 +56,7 @@ export default (props) => {
                 }
             })
             .then(result => {
-                const newId = result.data.task_new;
+                const newId = result.data.taskNew;
                 if (typeof onSubmited === "function") onSubmited(newId);
                 setInProgress(false);
             })
@@ -86,7 +86,7 @@ export default (props) => {
                 }
             })
             .then(result => {
-                const isChanged = result.data.task_edit;
+                const isChanged = result.data.taskEdit;
                 if (isChanged && typeof onSubmited === "function") onSubmited(task.id);
                 setInProgress(false);
             })

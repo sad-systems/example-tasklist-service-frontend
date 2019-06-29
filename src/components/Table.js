@@ -88,7 +88,7 @@ export default (props) => {
                     if (loading) return <div>Loading...</div>;
                     if (error)   return <div>Error</div>;
 
-                    setTotalCount(data.tasks_total);
+                    setTotalCount(data.tasksTotal);
                     setTasks(data.tasks);
                     return null;
                 }}

@@ -5,9 +5,10 @@
 
 ## Is used
 
-  * [React.js](https://reactjs.org)
+  * [react.js](https://reactjs.org)
   * [apollo graphql](https://www.apollographql.com)
-  * [bootstrap](https://getbootstrap.com)
+  * [redux](https://react-redux.js.org)
+  * [material-ui](https://material-ui.com)
     
 ## Description
 

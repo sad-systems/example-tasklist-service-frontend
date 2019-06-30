@@ -3,9 +3,6 @@
  */
 import React from "react";
 
-import { ApolloContext } from "react-apollo";
-import { gql } from "apollo-boost";
-
 import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
 import Dialog from '@material-ui/core/Dialog';
@@ -17,108 +14,61 @@ import FormControlLabel from '@material-ui/core/FormControlLabel';
 import FormControl from "@material-ui/core/FormControl/FormControl";
 import FormHelperText from "@material-ui/core/FormHelperText/FormHelperText";
 
-export default (props) => {
+import { connect } from 'react-redux';
+import { actionCommitExistedTask, actionSaveNewTask, actionCloseForm, actionFormInput } from "../redux/actions/form";
+
+const mapStateToProps = (state, ownProps) => ({
+    isAdmin:    state.auth.isAdmin,
+    isVisible:  state.form.isVisible,
+    inProgress: state.form.inProgress,
+    error:      state.form.error,
+    result:     state.form.result,
+    task:       state.form.data,
+});
+
+const mapDispatchToProps = {
+    actionCommitExistedTask,
+    actionSaveNewTask,
+    actionCloseForm,
+    actionFormInput,
+};
+
+export default connect (mapStateToProps, mapDispatchToProps) ( props => {
 
     const {
-        open = false,
-        isAdmin = false,
-        token = '',
+        isAdmin    = false,
+        isVisible  = false,
+        inProgress = false,
         task = {},
-        onSubmited,
-        onCanceled,
-        onChange,
     } = props;
 
-    const initState = {
-        inProgress: false,
-    };
-    const [ state, setState ] = React.useState(initState);
-    const changeState  = obj  => setState({ ...state, ...obj });
     const handleChange = name => event => {
-        if (typeof onChange === "function")
-            onChange(name, event.target.type === 'checkbox' ? event.target.checked : event.target.value);
-    };
-    
-    const catchError = error => {
-        changeState({inProgress: false});
-        alert("* ERROR! " + error.toString());
+        props.actionFormInput({ [name]: event.target.type === 'checkbox' ? event.target.checked : event.target.value });
     };
 
-    const client = (React.useContext(ApolloContext)).client;
     const createNewTask  = event => {
         event.preventDefault();
-        changeState({inProgress: true});
-        client
-            .mutate({
-                mutation: gql`
-                  mutation (
-                    $text:   String!,
-                    $email:  Email!,
-                    $name:   String,
-                    $status: Boolean,
-                  )
-                  {
-                    taskNew(text: $text, email: $email, name: $name, status: $status)
-                  }`,
-                variables: {
-                    text:   task.text,
-                    email:  task.email,
-                    name:   task.name,
-                    status: !!task.status,
-                }
-            })
-            .then(result => {
-                const newId = result.data.taskNew;
-                if (typeof onSubmited === "function") onSubmited(newId);
-                changeState({inProgress: false});
-            })
-            .catch( catchError );
+        props.actionSaveNewTask(task);
     };
 
     const saveExistedTask  = event => {
         event.preventDefault();
-        changeState({inProgress: true});
-        client
-            .mutate({
-                mutation: gql`
-                  mutation (
-                    $token:  String!,
-                    $id:     String!,
-                    $text:   String!,
-                    $status: Boolean,
-                  )
-                  {
-                    taskEdit(token: $token, id: $id, text: $text, status: $status)
-                  }`,
-                variables: {
-                    token:  token,
-                    id:     task.id,
-                    text:   task.text,
-                    status: !!task.status,
-                }
-            })
-            .then(result => {
-                const isChanged = result.data.taskEdit;
-                if (isChanged && typeof onSubmited === "function") onSubmited(task.id);
-                changeState({inProgress: false});
-            })
-            .catch( catchError );
+        props.actionCommitExistedTask(task);
     };
 
     const handleCancel = event => {
         event.preventDefault();
-        if (typeof onCanceled === "function") onCanceled();
-        changeState({inProgress: false});
+        props.actionCloseForm();
     };
 
     return (
-        <Dialog open={open} onClose={ handleCancel }>
+        <Dialog open={isVisible} onClose={ handleCancel }>
             <form align="left">
                 <DialogTitle>{task.id ? "Edit the task" : "New task"}</DialogTitle>
                 <DialogContent>
 
                     <TextField
-                        disabled={state.inProgress || !!task.id}
+                        disabled={inProgress || !!task.id}
                         value={task.name}
                         onChange={ handleChange("name") }
                         type="text"
@@ -128,7 +78,7 @@ export default (props) => {
                         autoFocus
                     />
                     <TextField
-                        disabled={state.inProgress || !!task.id}
+                        disabled={inProgress || !!task.id}
                         value={task.email}
                         onChange={ handleChange("email") }
                         type="email"
@@ -137,7 +87,7 @@ export default (props) => {
                         fullWidth
                     />
                     <TextField
-                        disabled={state.inProgress}
+                        disabled={inProgress}
                         value={task.text}
                         onChange={ handleChange("text") }
                         type="text"
@@ -155,7 +105,7 @@ export default (props) => {
                             <FormControlLabel
                                 control={
                                     <Checkbox
-                                        disabled={state.inProgress}
+                                        disabled={inProgress}
                                         checked={task.status}
                                         onChange={ handleChange("status") }
                                         color="primary"
@@ -178,4 +128,4 @@ export default (props) => {
         </Dialog>
     );
 
-}
+});

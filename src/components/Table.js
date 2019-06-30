@@ -2,8 +2,6 @@
  * Table component
  */
 import React from "react";
-import { Query } from "react-apollo";
-import { gql } from "apollo-boost";
 
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
@@ -15,36 +13,44 @@ import LinearProgress from '@material-ui/core/LinearProgress';
 
 import Pagination from "./Pagination";
 
-export default (props) => {
+import { connect } from 'react-redux';
+import { actionEditTask } from "../redux/actions/form";
+import { actionChangeOrder, actionChangeOffset } from "../redux/actions/tasks";
+
+const mapStateToProps = (state, ownProps) => ({
+    isAdmin:    state.auth.isAdmin,
+    inProgress: state.tasks.inProgress,
+    error:      state.tasks.error,
+    tasks:      state.tasks.list,
+    order:      state.tasks.order,
+    offset:     state.tasks.offset,
+    limit:      state.tasks.limit,
+    totalCount: state.tasks.totalCount,
+});
+
+const mapDispatchToProps = {
+    actionEditTask,
+    actionChangeOrder,
+    actionChangeOffset,
+};
+
+export default connect (mapStateToProps, mapDispatchToProps) ( props => {
 
     const {
-        offset  = 0,
-        limit   = 3,
-        isAdmin = false,
-        onEdit,
+        isAdmin    = false,
+        inProgress = false,
+        error      = null,
+        order      = {},
+        tasks      = [],
+        offset     = 0,
+        limit      = 0,
+        totalCount = 0,
     } = props;
 
-    const initState = {
-        currentOffset: offset,
-        currentLimit:  limit,
-        orderByName:   0,
-        orderByEmail:  0,
-        orderByStatus: 0,
-    };
-    const [ state, setState ]           = React.useState(initState);
-    const [ totalCount, setTotalCount ] = React.useState(0);
-    const [ tasks, setTasks ]           = React.useState([]);
-
-    const changeState            = obj => setState({ ...state, ...obj });
-    const handlePaginationChange = offset => { changeState({ currentOffset: offset }) };
-    const handleEdit             = index  => { if (typeof onEdit === 'function') onEdit( tasks[index] ); };
-    
-    const getOrderValueForQuery = (fieldName, value) => {
-        return value ? ( `{ field: ${fieldName}, direction: ${(value === 1 ? 'desc' : 'asc')} }, ` ) : '';
-    };
-    const orderValueToggle = value => { return ++value > 2 ? 0 : value; };
-    const getOrderSymbol   = value => { return value ? ( value > 1 ? "▲" : "▼" ) : ""; };
-    const handleOrderBy    = key   => event => changeState({ [key]: orderValueToggle(state[key]) });
+    const handleEdit             = index  => props.actionEditTask(index);
+    const handleOrderBy          = key    => event => props.actionChangeOrder(key);
+    const handlePaginationChange = offset => props.actionChangeOffset(offset);
+    const getOrderSymbol         = value  => value ? ( value > 1 ? "▲" : "▼" ) : "";
 
     return (
         <React.Fragment>
@@ -52,10 +58,10 @@ export default (props) => {
                 <TableHead>
                     <TableRow>
                         <TableCell>ID</TableCell>
-                        <TableCell><Button onClick={ handleOrderBy("orderByName") }>{getOrderSymbol(state.orderByName)} Name</Button></TableCell>
-                        <TableCell><Button onClick={ handleOrderBy("orderByEmail") }>{getOrderSymbol(state.orderByEmail)} E-mail</Button></TableCell>
+                        <TableCell><Button onClick={ handleOrderBy("name") } >{getOrderSymbol(order.name)} Name</Button></TableCell>
+                        <TableCell><Button onClick={ handleOrderBy("email") }>{getOrderSymbol(order.email)} E-mail</Button></TableCell>
                         <TableCell>Text</TableCell>
-                        <TableCell><Button onClick={ handleOrderBy("orderByStatus") }>{getOrderSymbol(state.orderByStatus)} Status</Button></TableCell>
+                        <TableCell><Button onClick={ handleOrderBy("status") }>{getOrderSymbol(order.status)} Status</Button></TableCell>
                         { isAdmin ? <TableCell>Action</TableCell> : null }
                     </TableRow>
                 </TableHead>
@@ -72,39 +78,10 @@ export default (props) => {
                 ))}
                 </TableBody>
             </Table>
-            <Query
-                query={gql`
-                            {
-                              tasks(
-                                offset:${state.currentOffset},
-                                limit:${state.currentLimit},
-                                order:[
-                                  ${getOrderValueForQuery("name", state.orderByName)}
-                                  ${getOrderValueForQuery("email", state.orderByEmail)}
-                                  ${getOrderValueForQuery("status", state.orderByStatus)}
-                                ]
-                              ) {
-                                id,
-                                name,
-                                email,
-                                text,
-                                status
-                              },
-                              tasksTotal
-                            }
-                        `}
-            >
-                {({ loading, error, data }) => {
-                    if (loading) return <LinearProgress/>;
-                    if (error)   return <div>Error</div>;
-
-                    setTotalCount(data.tasksTotal);
-                    setTasks(data.tasks);
-                    return null;
-                }}
-            </Query>
-            <Pagination total={totalCount} limit={state.currentLimit} offset={state.currentOffset} onChange={ handlePaginationChange }/>
+            { inProgress ? <LinearProgress/> : null }
+            { error      ? <div>Error</div>  : null }
+            <Pagination total={totalCount} limit={limit} offset={offset} onChange={ handlePaginationChange } />
         </React.Fragment>
     );
 
-}
+});

@@ -10,40 +10,28 @@ import Typography from '@material-ui/core/Typography';
 import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
 
-import { ApolloContext } from "react-apollo";
-import { gql } from "apollo-boost";
+import { connect } from 'react-redux';
+import { actionLogin } from "../redux/actions/auth";
 
-export default (props) => {
+const mapStateToProps = (state, ownProps) => ({
+    inProgress: state.auth.inProgress,
+    isAdmin:    state.auth.isAdmin,
+    error:      state.auth.error,
+});
 
-    const { onLogin, isAdmin } = props;
-    const client    = (React.useContext(ApolloContext)).client;
-    const initState = {
-        user: "",
-        pass: "",
-        inProgress: false
-    };
-    const [ state, setState ] = React.useState(initState);
+const mapDispatchToProps = {
+    actionLogin
+};
 
-    const changeState  = obj  => setState({ ...state, ...obj });
+export default connect (mapStateToProps, mapDispatchToProps) ( props => {
+
+    const { isAdmin, inProgress } = props;
+    const initState               = { user: "", pass: "" };
+    const [ state, setState ]     = React.useState(initState);
+
     const handleChange = name => event => setState({ ...state, [name]: event.target.value });
-    const login        = ()   => {
-        changeState({inProgress:true});
-        client
-            .query({
-                query: gql`
-                  {
-                     access(user:"${state.user}" pass:"${state.pass}")
-                  }`
-            })
-            .then(result => {
-                setState(initState);
-                if (typeof onLogin === "function") onLogin(result.data.access);
-            })
-            .catch(error => {
-                setState(initState);
-                alert("* ERROR! " + error.toString());
-            });
-    };
+    const login        = ()   => { props.actionLogin(state.user, state.pass); };
+    React.useEffect( () => { if (!inProgress) setState(initState); }, [inProgress] ); // <--- Reset form on finished
 
     const classes = makeStyles(theme => ({
         container: {
@@ -73,7 +61,7 @@ export default (props) => {
                         label="User"
                         margin="dense"
                         variant="outlined"
-                        disabled={state.inProgress}
+                        disabled={inProgress}
                         value={state.user}
                         onChange={ handleChange("user") }
                         className={classes.textField}
@@ -83,15 +71,15 @@ export default (props) => {
                         margin="dense"
                         variant="outlined"
                         type="password"
-                        disabled={state.inProgress}
+                        disabled={inProgress}
                         value={state.pass}
                         onChange={ handleChange("pass") }
                         className={classes.textField}
                     />
-                    <Button disabled={state.inProgress} onClick={ login } variant="contained" color="primary">Sign in</Button>
+                    <Button disabled={inProgress} onClick={ login } variant="contained" color="primary">Sign in</Button>
                 </form>
             </Toolbar>
         </AppBar>
     );
 
-}
+});

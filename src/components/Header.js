@@ -3,46 +3,83 @@
  */
 import React from "react";
 import IconPerson from "../icons/IconPerson";
+import { makeStyles } from '@material-ui/core/styles';
+import AppBar from '@material-ui/core/AppBar';
+import Toolbar from '@material-ui/core/Toolbar';
+import Typography from '@material-ui/core/Typography';
+import TextField from '@material-ui/core/TextField';
+import Button from '@material-ui/core/Button';
 
-import { ApolloContext } from "react-apollo";
-import { gql } from "apollo-boost";
+import { connect } from 'react-redux';
+import { actionLogin } from "../redux/actions/auth";
 
-export default (props) => {
+const mapStateToProps = (state, ownProps) => ({
+    inProgress: state.auth.inProgress,
+    isAdmin:    state.auth.isAdmin,
+    error:      state.auth.error,
+});
 
-    const { onLogin, isAdmin } = props;
-    const [ inProgress, setInProgress ] = React.useState(false);
-    const user = React.createRef();
-    const pass = React.createRef();
-    const form = React.createRef();
+const mapDispatchToProps = {
+    actionLogin
+};
 
-    const client = (React.useContext(ApolloContext)).client;
-    const login  = () => {
-        const sourceForm = form.current;
-        setInProgress(true);
-        client
-            .query({
-                query: gql`
-                  {
-                     access(user:"${user.current.value}" pass:"${pass.current.value}")
-                  }`
-            })
-            .then(result => {
-                setInProgress(false);
-                sourceForm.reset();
-                if (typeof onLogin === "function") onLogin(result.data.access);
-            });
-    };
+export default connect (mapStateToProps, mapDispatchToProps) ( props => {
+
+    const { isAdmin, inProgress } = props;
+    const initState               = { user: "", pass: "" };
+    const [ state, setState ]     = React.useState(initState);
+
+    const handleChange = name => event => setState({ ...state, [name]: event.target.value });
+    const login        = ()   => { props.actionLogin(state.user, state.pass); };
+    React.useEffect( () => { if (!inProgress) setState(initState); }, [inProgress] ); // <--- Reset form on finished
+
+    const classes = makeStyles(theme => ({
+        container: {
+            display:    "flex",
+            alignItems: "center",
+            width:      "100%",
+        },
+        title: {
+            flexGrow:  1,
+            textAlign: "left",
+        },
+        textField: {
+            marginLeft:  theme.spacing(1),
+            marginRight: theme.spacing(1),
+        },
+    }))();
 
     return (
-        <nav className="navbar navbar-light bg-light">
-            <span className="navbar-brand">Task list</span>
-            <form ref={form} className="form-inline">
-                <IconPerson fill={ isAdmin ? "#0a0" : "inherit" } style={{margin: "0.5em"}}/>
-                <input ref={user} disabled={inProgress} className="form-control mr-sm-2" type="text" placeholder="User" aria-label="User"/>
-                <input ref={pass} disabled={inProgress} className="form-control mr-sm-2" type="password" placeholder="Password" aria-label="Password"/>
-                    <button disabled={inProgress} className="btn btn-outline-success my-2 my-sm-0" type="button" onClick={ login }>Sign in</button>
-            </form>
-        </nav>
+        <AppBar position="relative">
+            <Toolbar>
+                <form className={classes.container}>
+                    <Typography variant="h6" noWrap className={classes.title}>
+                        Task list
+                    </Typography>
+                    <IconPerson fill={ isAdmin ? "#0f0" : "inherit" }/>
+                    <TextField
+                        label="User"
+                        margin="dense"
+                        variant="outlined"
+                        disabled={inProgress}
+                        value={state.user}
+                        onChange={ handleChange("user") }
+                        className={classes.textField}
+                    />
+                    <TextField
+                        label="Password"
+                        margin="dense"
+                        variant="outlined"
+                        type="password"
+                        disabled={inProgress}
+                        value={state.pass}
+                        onChange={ handleChange("pass") }
+                        className={classes.textField}
+                    />
+                    <Button disabled={inProgress} onClick={ login } variant="contained" color="primary">Sign in</Button>
+                </form>
+            </Toolbar>
+        </AppBar>
     );
 
-}
+});

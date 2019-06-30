@@ -1,52 +1,43 @@
+/**
+ * Application
+ */
 import React from "react";
 import ApolloClient from "apollo-boost";
-import {ApolloProvider} from "react-apollo";
+import { ApolloProvider } from "react-apollo";
+import { Provider as ReduxProvider } from 'react-redux'
+import { ThemeProvider } from '@material-ui/styles';
+import CssBaseline from '@material-ui/core/CssBaseline';
 
 import Header from "./components/Header";
 import Table from "./components/Table";
 import Form from "./components/Form";
+import ActionBlock from "./components/ActionBlock";
 
-import "./App.css";
+import store from "./redux/store";
+import { actionSetDatabaseClient } from "./redux/actions/app";
+import { actionFetch } from "./redux/actions/tasks";
 import config from "./configs/main";
+import theme from "./configs/theme";
 
-const client = new ApolloClient({
-    uri: config.graphql_endpoint,
-});
+const client = new ApolloClient({ uri: config.graphql_endpoint });
+store.dispatch( actionSetDatabaseClient(client) );
+store.dispatch( actionFetch() );
 
 function App() {
-
-  const [ isAdmin, setIsAdmin ]   = React.useState(false);
-  const [ token, setToken ]       = React.useState(false);
-  const [ formData, setFormData ] = React.useState(false);
-
-  const handleLogin = token => {
-      setToken(token);
-      setIsAdmin(!!token);
-  };
-
-  const handleEdit = task => {
-      setFormData(task);
-  };
-
-  const handleNewTask = () => {
-      setFormData({});
-  };
-
-  const handleSubmited = id => { console.log("WWWW");
-      client.resetStore(); //<--- Clear GraphQL cache
-  };
-
   return (
-        <ApolloProvider client={client}>
-            <div className="container" align="center">
-               <Header isAdmin={isAdmin} onLogin={ handleLogin }/>
-               <Table isAdmin={isAdmin} onEdit={ handleEdit }/>
-               <div className="card-body" align="left">
-                   <button className="btn btn-primary" onClick={ handleNewTask }>New task</button>
-               </div>
-               <Form isAdmin={isAdmin} token={token} task={formData} onSubmited={handleSubmited}/>
-            </div>
-        </ApolloProvider>
+        <ReduxProvider store={store}>
+            <ApolloProvider client={client}>
+                <ThemeProvider theme={theme}>
+                    <CssBaseline/>
+                    <div align="center">
+                       <Header/>
+                       <Table/>
+                       <ActionBlock/>
+                       <Form/>
+                    </div>
+                </ThemeProvider>
+            </ApolloProvider>
+        </ReduxProvider>
   );
 }
 

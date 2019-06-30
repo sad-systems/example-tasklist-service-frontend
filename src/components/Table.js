@@ -2,99 +2,86 @@
  * Table component
  */
 import React from "react";
-import { Query } from "react-apollo";
-import { gql } from "apollo-boost";
+
+import Table from '@material-ui/core/Table';
+import TableBody from '@material-ui/core/TableBody';
+import TableCell from '@material-ui/core/TableCell';
+import TableHead from '@material-ui/core/TableHead';
+import TableRow from '@material-ui/core/TableRow';
+import Button from '@material-ui/core/Button';
+import LinearProgress from '@material-ui/core/LinearProgress';
 
 import Pagination from "./Pagination";
 
-export default (props) => {
+import { connect } from 'react-redux';
+import { actionEditTask } from "../redux/actions/form";
+import { actionChangeOrder, actionChangeOffset } from "../redux/actions/tasks";
+
+const mapStateToProps = (state, ownProps) => ({
+    isAdmin:    state.auth.isAdmin,
+    inProgress: state.tasks.inProgress,
+    error:      state.tasks.error,
+    tasks:      state.tasks.list,
+    order:      state.tasks.order,
+    offset:     state.tasks.offset,
+    limit:      state.tasks.limit,
+    totalCount: state.tasks.totalCount,
+});
+
+const mapDispatchToProps = {
+    actionEditTask,
+    actionChangeOrder,
+    actionChangeOffset,
+};
+
+export default connect (mapStateToProps, mapDispatchToProps) ( props => {
 
     const {
-        offset  = 0,
-        limit   = 3,
-        isAdmin = false,
-        onEdit,
+        isAdmin    = false,
+        inProgress = false,
+        error      = null,
+        order      = {},
+        tasks      = [],
+        offset     = 0,
+        limit      = 0,
+        totalCount = 0,
     } = props;
 
-    const [currentOffset, setCurrentOffset] = React.useState(offset);
-    const [currentLimit, setCurrentLimit]   = React.useState(limit);
-    const [totalCount, setTotalCount]       = React.useState(0);
-    const [orderByName, setOrderByName]     = React.useState(0);
-    const [orderByEmail, setOrderByEmail]   = React.useState(0);
-    const [orderByStatus, setOrderByStatus] = React.useState(0);
-    const [tasks, setTasks]                 = React.useState([]);
-
-    const handlePaginationChange = offset => { setCurrentOffset(offset) };
-    const handleEdit             = index  => { if (typeof onEdit === 'function') onEdit( tasks[index] ); };
-    
-    const getOrderValueForQuery = (fieldName, value) => {
-        return value ? ( `{ field: ${fieldName}, direction: ${(value === 1 ? 'desc' : 'asc')} }, ` ) : '';
-    };
-    const orderValueToggle    = value => { return ++value > 2 ? 0 : value; };
-    const getOrderSymbol      = value => { return value ? ( value > 1 ? "▲" : "▼" ) : ""; };
-    const handleOrderByName   = () => { setOrderByName( orderValueToggle(orderByName) ) };
-    const handleOrderByEmail  = () => { setOrderByEmail( orderValueToggle(orderByEmail) ) };
-    const handleOrderByStatus = () => { setOrderByStatus( orderValueToggle(orderByStatus) ) };
+    const handleEdit             = index  => props.actionEditTask(index);
+    const handleOrderBy          = key    => event => props.actionChangeOrder(key);
+    const handlePaginationChange = offset => props.actionChangeOffset(offset);
+    const getOrderSymbol         = value  => value ? ( value > 1 ? "▲" : "▼" ) : "";
 
     return (
         <React.Fragment>
-            <table className="table">
-                <thead>
-                    <tr>
-                        <th scope="col">ID</th>
-                        <th scope="col"><button className="btn btn-secobdary" onClick={handleOrderByName}>{getOrderSymbol(orderByName)} Name</button></th>
-                        <th scope="col"><button className="btn btn-secobdary" onClick={handleOrderByEmail}>{getOrderSymbol(orderByEmail)} E-mail</button></th>
-                        <th scope="col">Text</th>
-                        <th scope="col"><button className="btn btn-secobdary" onClick={handleOrderByStatus}>{getOrderSymbol(orderByStatus)} Status</button></th>
-                        { isAdmin ? <th scope="col">Action</th> : null }
-                    </tr>
-                </thead>
-                <tbody>
+            <Table>
+                <TableHead>
+                    <TableRow>
+                        <TableCell>ID</TableCell>
+                        <TableCell><Button onClick={ handleOrderBy("name") } >{getOrderSymbol(order.name)} Name</Button></TableCell>
+                        <TableCell><Button onClick={ handleOrderBy("email") }>{getOrderSymbol(order.email)} E-mail</Button></TableCell>
+                        <TableCell>Text</TableCell>
+                        <TableCell><Button onClick={ handleOrderBy("status") }>{getOrderSymbol(order.status)} Status</Button></TableCell>
+                        { isAdmin ? <TableCell>Action</TableCell> : null }
+                    </TableRow>
+                </TableHead>
+                <TableBody>
                 { tasks.map(({ id, name, email, text, status }, index) => (
-                    <tr key={id}>
-                        <th scope="row">{id}</th>
-                        <td>{name}</td>
-                        <td>{email}</td>
-                        <td>{text}</td>
-                        <td>{status ? 'Done' : ''}</td>
-                        { isAdmin ? <td><button className="btn btn-secobdary" onClick={ () => { handleEdit(index) } }>Edit</button></td> : null }
-                    </tr>
-                ))} 
-                </tbody>
-            </table>
-            <Query
-                query={gql`
-                            {
-                              tasks(
-                                offset:${currentOffset},
-                                limit:${currentLimit},
-                                order:[
-                                  ${getOrderValueForQuery("name", orderByName)}
-                                  ${getOrderValueForQuery("email", orderByEmail)}
-                                  ${getOrderValueForQuery("status", orderByStatus)}
-                                ]
-                              ) {
-                                id,
-                                name,
-                                email,
-                                text,
-                                status
-                              },
-                              tasksTotal
-                            }
-                        `}
-            >
-                {({ loading, error, data }) => {
-                    if (loading) return <div>Loading...</div>;
-                    if (error)   return <div>Error</div>;
-
-                    setTotalCount(data.tasksTotal);
-                    setTasks(data.tasks);
-                    return null;
-                }}
-            </Query>
-            <Pagination total={totalCount} limit={currentLimit} offset={currentOffset} onChange={handlePaginationChange}/>
+                    <TableRow key={id}>
+                        <TableCell scope="row">{id}</TableCell>
+                        <TableCell>{name}</TableCell>
+                        <TableCell>{email}</TableCell>
+                        <TableCell>{text}</TableCell>
+                        <TableCell>{status ? 'Done' : ''}</TableCell>
+                        { isAdmin ? <TableCell><Button onClick={ () => { handleEdit(index) } } variant="contained" color="primary">Edit</Button></TableCell> : null }
+                    </TableRow>
+                ))}
+                </TableBody>
+            </Table>
+            { inProgress ? <LinearProgress/> : null }
+            { error      ? <div>Error</div>  : null }
+            <Pagination total={totalCount} limit={limit} offset={offset} onChange={ handlePaginationChange } />
         </React.Fragment>
     );
 
-}
+});

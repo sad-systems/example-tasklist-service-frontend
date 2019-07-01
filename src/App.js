@@ -1,5 +1,7 @@
 /**
  * Application
+ *
+ *  @module Application
  */
 import React from "react";
 import ApolloClient from "apollo-boost";

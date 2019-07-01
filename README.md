@@ -54,6 +54,10 @@ Use:
   * password: 123
    
 to get the access to edit tasks.
+
+### Documentation
+
+View [classes description](http://tasklist.frontend.examples.sad-systems.ru/docs/index.html).
  
 ### Project source files
 

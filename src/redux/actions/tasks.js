@@ -1,5 +1,8 @@
 /**
  * Actions to manipulate the task list
+ *
+ * @class tasks
+ * @namespace actions
  */
 
 import { gql } from "apollo-boost";
@@ -16,6 +19,11 @@ const getOrderValueForQuery = (fieldName, value) => {
 /**
  * Async action to fetch task list from server.
  * Obtains the tasks list.
+ *
+ * @method actionFetch
+ * @async
+ *
+ * @param {boolean} reset
  *
  * @return {Function}
  */
@@ -67,7 +75,11 @@ export const actionFetch = (reset = false) => dispatch => {
 };
 
 /**
+ * Async action.
  * Changes the start position and request the new list from server.
+ *
+ * @method actionChangeOffset
+ * @async
  *
  * @param {int} offset  The new start position
  *
@@ -81,7 +93,11 @@ export const actionChangeOffset = offset => dispatch => {
 };
 
 /**
+ * Async action.
  * Changes the order by statement and request the new list from server.
+ *
+ * @method actionChangeOrder
+ * @async
  *
  * @param {string} name The field name to order
  *

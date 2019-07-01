@@ -1,5 +1,8 @@
 /**
  * Form component
+ *
+ * @class Form
+ * @namespace components
  */
 import React from "react";
 
@@ -18,18 +21,78 @@ import { connect } from 'react-redux';
 import { actionCommitExistedTask, actionSaveNewTask, actionCloseForm, actionFormInput } from "../redux/actions/form";
 
 const mapStateToProps = (state, ownProps) => ({
+    /**
+     * @property isAdmin
+     * @type     boolean
+     * @default  false
+     */
     isAdmin:    state.auth.isAdmin,
+
+    /**
+     * @property isVisible
+     * @type     boolean
+     * @default  false
+     */
     isVisible:  state.form.isVisible,
+
+    /**
+     * @property inProgress
+     * @type     boolean
+     * @default  false
+     */
     inProgress: state.form.inProgress,
+
+    /**
+     * @property error
+     * @type     string
+     * @default  null
+     */
     error:      state.form.error,
+
+    /**
+     * Not used yet
+     * @beta
+     *
+     * @property result
+     * @type     Object
+     * @default  {}
+     */
     result:     state.form.result,
+
+    /**
+     * Contains the task object
+     *
+     * @property task
+     * @type     Object
+     * @default  {}
+     */
     task:       state.form.data,
 });
 
 const mapDispatchToProps = {
+    /**
+     * Execute the same action
+     *
+     * @method actionCommitExistedTask
+     */
     actionCommitExistedTask,
+    /**
+     * Execute the same action
+     *
+     * @method actionSaveNewTask
+     */
     actionSaveNewTask,
+    /**
+     * Execute the same action
+     *
+     * @method actionCloseForm
+     */
     actionCloseForm,
+    /**
+     * Execute the same action
+     *
+     * @method actionFormInput
+     */
     actionFormInput,
 };
 

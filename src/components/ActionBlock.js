@@ -1,5 +1,8 @@
 /**
  * Action block component
+ *
+ * @class ActionBlock
+ * @namespace components
  */
 import React from "react";
 
@@ -13,6 +16,10 @@ const mapStateToProps = (state, ownProps) => ({
 });
 
 const mapDispatchToProps = {
+    /**
+     * Execute the action "actionNewTask" when button is clicked
+     * @method actionNewTask
+     */
     actionNewTask
 };
 

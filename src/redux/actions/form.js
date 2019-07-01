@@ -1,5 +1,8 @@
 /**
  * Actions to create/update the task
+ *
+ * @class form
+ * @namespace actions
  */
 
 import { gql } from "apollo-boost";
@@ -12,6 +15,8 @@ import { actionFetch } from "./tasks";
 /**
  * Opens the form
  *
+ * @method actionOpenForm
+ *
  * @return {{type: string, payload: boolean}}
  */
 export const actionOpenForm = () => ({ type: ACTIONS.FORM_POPUP, payload: true });
@@ -19,12 +24,17 @@ export const actionOpenForm = () => ({ type: ACTIONS.FORM_POPUP, payload: true }
 /**
  * Closes the form
  *
+ * @method actionCloseForm
+ *
  * @return {{type: string, payload: boolean}}
  */
 export const actionCloseForm = () => ({ type: ACTIONS.FORM_POPUP, payload: false });
 
 /**
  * Async action to fill the form with init data
+ *
+ * @method actionNewTask
+ * @async
  *
  * @return {{type: string}}
  */
@@ -39,6 +49,9 @@ export const actionNewTask = () => dispatch => {
 
 /**
  * Async action to fill the form with data of an existed task
+ *
+ * @method actionEditTask
+ * @async
  *
  * @param {string} id ID of the existed task
  *
@@ -60,7 +73,9 @@ export const actionEditTask = id => dispatch => {
 /**
  * Changes the form data
  *
- * @param data
+ * @method actionFormInput
+ *
+ * @param {Object} data
  *
  * @return {{type: string, payload: *}}
  */
@@ -69,9 +84,14 @@ export const actionFormInput = data => ({ type: ACTIONS.FORM_FILL, payload: data
 /**
  * Async action to save a new task. (with side effect)
  *
+ * @method actionSaveNewTask
+ * @async
+ *
+ * @param {Object} task
+ *
  * @return {Function}
  */
-export const actionSaveNewTask = (task) => dispatch => {
+export const actionSaveNewTask = task => dispatch => {
 
     dispatch({type: ACTIONS.FORM_SUBMIT});
 
@@ -105,9 +125,14 @@ export const actionSaveNewTask = (task) => dispatch => {
 /**
  * Async action to save a new task. (with side effect)
  *
+ * @method actionCommitExistedTask
+ * @async
+ *
+ * @param {Object} task
+ *
  * @return {Function}
  */
-export const actionCommitExistedTask = (task) => dispatch => {
+export const actionCommitExistedTask = task => dispatch => {
 
     dispatch({type: ACTIONS.FORM_SUBMIT});
 

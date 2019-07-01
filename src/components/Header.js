@@ -1,5 +1,8 @@
 /**
  * Header component
+ *
+ * @class Header
+ * @namespace components
  */
 import React from "react";
 import IconPerson from "../icons/IconPerson";
@@ -14,12 +17,33 @@ import { connect } from 'react-redux';
 import { actionLogin } from "../redux/actions/auth";
 
 const mapStateToProps = (state, ownProps) => ({
+    /**
+     * @property inProgress
+     * @type     boolean
+     * @default  false
+     */
     inProgress: state.auth.inProgress,
+
+    /**
+     * @property isAdmin
+     * @type     boolean
+     * @default  false
+     */
     isAdmin:    state.auth.isAdmin,
+
+    /**
+     * @property error
+     * @type     string
+     * @default  null
+     */
     error:      state.auth.error,
 });
 
 const mapDispatchToProps = {
+    /**
+     * Execute the same action
+     * @method actionLogin
+     */
     actionLogin
 };
 

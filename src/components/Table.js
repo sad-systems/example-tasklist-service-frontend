@@ -1,5 +1,8 @@
 /**
  * Table component
+ *
+ * @class Table
+ * @namespace components
  */
 import React from "react";
 
@@ -18,19 +21,88 @@ import { actionEditTask } from "../redux/actions/form";
 import { actionChangeOrder, actionChangeOffset } from "../redux/actions/tasks";
 
 const mapStateToProps = (state, ownProps) => ({
+    /**
+     * @property isAdmin
+     * @type     boolean
+     * @default  false
+     */
     isAdmin:    state.auth.isAdmin,
+
+    /**
+     * @property inProgress
+     * @type     boolean
+     * @default  false
+     */
     inProgress: state.tasks.inProgress,
+
+    /**
+     * @property error
+     * @type     string
+     * @default  null
+     */
     error:      state.tasks.error,
+
+    /**
+     * The array of task objects
+     *
+     * @property tasks
+     * @type     array
+     * @default  []
+     */
     tasks:      state.tasks.list,
+
+    /**
+     * @property order
+     * @type     Object
+     * default   {}
+     */
     order:      state.tasks.order,
+
+    /**
+     * Items offset value
+     *
+     * @property offset
+     * @type     int
+     * @default  0
+     */
     offset:     state.tasks.offset,
+
+    /**
+     * Items per page limit
+     *
+     * @property limit
+     * @type     int
+     * @default  0
+     */
     limit:      state.tasks.limit,
+
+    /**
+     * Items total count
+     *
+     * @property totalCount
+     * @type     int
+     * @default  0
+     */
     totalCount: state.tasks.totalCount,
 });
 
 const mapDispatchToProps = {
+    /**
+     * Execute the same action
+     * @method actionEditTask
+     */
     actionEditTask,
+
+    /**
+     * Execute the same action
+     * @method actionChangeOrder
+     */
     actionChangeOrder,
+
+    /**
+     * Execute the same action
+     * @method actionChangeOffset
+     */
     actionChangeOffset,
 };
 

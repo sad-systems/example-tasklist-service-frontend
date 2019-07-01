@@ -1,5 +1,8 @@
 /**
  * Pagination component
+ *
+ * @class Pagination
+ * @namespace components
  */
 import React from "react";
 
@@ -9,7 +12,42 @@ import Container from '@material-ui/core/Container';
 
 export default (props) => {
 
-    const { total, limit, offset, onChange } = props;
+    const {
+        /**
+         * Pagination items total count
+         *
+         * @property total
+         * @type     int
+         * @default  0
+         */
+        total,
+
+        /**
+         * Pagination items per page limit
+         *
+         * @property limit
+         * @type     int
+         * @default  0
+         */
+        limit,
+
+        /**
+         * Pagination items offset value
+         *
+         * @property offset
+         * @type     int
+         * @default  0
+         */
+        offset,
+
+        /**
+         * Callback on pagination offset is changed
+         *
+         * @property onChange
+         * @type function (offset: int)
+         */
+        onChange
+    } = props;
 
     const pageCount   = limit > 0 ? Math.ceil( total  / limit ) || 1 : 1;
     const currentPage = limit > 0 ? Math.ceil( (offset + 1) / limit ) || 1 : 1;

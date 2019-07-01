@@ -1,5 +1,8 @@
 /**
  * Actions to authenticate
+ *
+ * @class auth
+ * @namespace actions
  */
 
 import { gql } from "apollo-boost";
@@ -10,6 +13,8 @@ import store from "../store";
 /**
  * Async action to authenticate. (with side effect)
  * Obtains the auth token.
+ *
+ * @method actionLogin
  *
  * @param user
  * @param password
